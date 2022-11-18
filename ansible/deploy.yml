@@ -1,0 +1,30 @@
+- hosts: all
+  become: yes
+  remote_user: user
+  tasks:
+    - include_vars: vars/variables.yml
+
+    - name: Create docker-compose
+      template:
+        src: templates/docker-compose.yml.j2
+        dest: ./webinar/docker-compose.yml
+        mode: 0644
+
+    - name: Create index.php
+      template:
+        src: templates/index.php.j2
+        dest: ./webinar/index.php
+        mode: 0644
+
+    - name: copy sql-dump
+      copy:
+        src: other/webinar.sql
+        dest: ./webinar/webinar.sql
+        mode: 0644
+
+    - name: docker deploy
+      community.docker.docker_stack:
+        state: present
+        name: webinar
+        compose: ./webinar/docker-compose.yml
+

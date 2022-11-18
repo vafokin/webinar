@@ -1,0 +1,37 @@
+version: '3'
+
+services:
+  sql:
+    image: mysql:8.0-debian
+    deploy:
+      replicas: {{ replicas }}
+    networks:
+      - webinar_net
+    environment:
+      MYSQL_ROOT_PASSWORD: {{ password }}
+    volumes:
+      - stores:/docker-entrypoint-initdb.d/:ro
+    ports:
+      - 3306:3306
+
+  php:
+    image: vafokin/webinar:1
+    networks: 
+      - webinar_net
+    ports:
+      - 80:80
+    volumes:
+      - stores:/var/www/html/:ro
+    depends_on:
+      - sql
+
+networks:
+  webinar_net:
+
+volumes:
+  stores:
+    driver: local
+    driver_opts:
+      type: 'none'
+      device: $PWD/webinar
+      o: 'bind'
